@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>TalkPolitics</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+
+			$('form').submit(function(e) {
+				e.preventDefault();
+				var name = $("input[name='username']").val();
+				console.log(name);
+				$.post('/setUsername', {name: name}, function(data) {
+					$('#name').html(data);
+				});
+				return false;
+			});
+			
+		});	
+	</script>
+</head>
+<body>
+	<h1>Hello, <span id="name"><%-username%></span>!</h1>
+	<form>
+		Change username:<br>
+		<input type="text" name="username">
+		<input type="submit" value="Submit">
+	</form> 
+	<a href='/chat'>Chat!</a>
+</body>
+</html>

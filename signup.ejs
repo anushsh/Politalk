@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang = "en">
+<!-- css -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/templating.css">
+  <script type="text/javascript" src="/routes/routes.js"></script>
+<body>
+  <nav class="navbar navbar-white bg-dark absolute-top">
+  <span class="text-white"><h1>Signup for PoliTalk</h1></span>
+  </nav>
+  <div class="pl-3 pt-3">
+  <h4>Enter new username: </h4>
+  <form action="/createaccount" method="post">
+    <input type="text" name="Inputholder">
+  </p>
+   <h4>Enter password: </h4>
+    <input type="password" name="password">
+    </p>
+    <h4>Enter email: </h4>
+    <input type="text" name="email">
+    </p>
+    <h4>Enter affiliation: </h4>
+    <input type="text" name="affiliation">
+    </p>
+    <h4>Enter political orientation (From -10 to 10): </h4>
+    <input type="text" name="political">
+    </p>
+        <button type="submit" value="Login" class="btn btn-primary">Submit</button>
+    </p>
+    <a href="/" class="btn btn-primary">
+      <span class="glyphicon glyphicon-home"></span> Go Back
+    </a>
+  </form>
+  </p>
+  <%if (message != null) { %>
+  <font color="red"><%= message %><p>
+  <% } %>
+  </p>
+  <font color="black">
+  </div>
+</body>
+</p>
+</html>

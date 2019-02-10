@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang = "en">
+<head>
+	<!-- meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- css -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/chat.css">
+
+	<!-- scripts -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript">
+		var username = <%-JSON.stringify(username)%>;
+		var friendsList = <%-JSON.stringify(friends)%>;
+	</script>
+	<script type="text/javascript" src="/js/chat.js"></script>
+<title>Chat</title>
+</head>
+<body>
+	<nav class="navbar navbar-dark bg-dark pl-1 fixed-top">
+		<a href="/" class="btn btn-secondary btn-lg">
+			<span class="glyphicon glyphicon-home"></span> Home
+		</a>
+		<h1>Chat</h1>
+		<div>Username: <%-username%></div>
+	</nav>
+
+	<div class="row">
+		<nav class="col-md-3 bg-light sidebar" aria-orientation="vertical">
+			<div class="sidebar-header">
+				<h3>Friends</h3>
+			</div>
+			<table id="friends" class="table">
+				<% for (var i = 0; i < friends.length; i++) { -%>
+				<tr id=<%-friends[i]%>>
+					<td><%-friends[i]%></td>
+					<td>inactive</td>
+					<td>
+						<button type="button" class="btn btn-outline-primary btn-sm" state="send_req">
+							Request Chat
+						</button>
+					</td>
+				</tr>
+				<% } -%>
+			</table>
+		</nav>
+		<div class="col-9">
+			<ul id="messages" class="list-group list-group-flush"></ul>
+			<form class="form-inline" action="">
+				<div class="form-group md-9 mx-sm-3 mb-2">
+					<input class="form-control" id="m" autocomplete="off">
+				</div>
+				<button id="send" type="submit" class="btn btn-primary mb-2" disabled>Send</button>
+			</form>
+		</div>
+	</div>
+</body>
+</html>
