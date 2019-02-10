@@ -1,0 +1,238 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>PoliTalk</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.2.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.2.0/js/bootstrap4-toggle.min.js"></script>
+  <script src="frontend/js/templating.js"></script>
+  <script src="frontend/js/feed.js"></script>
+  <script src="frontend/js/wall.js"></script>
+  <script src="frontend/js/createpost.js"></script>
+  <script src="frontend/js/usersearch.js"></script>
+  <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+  <!--!!!!!!! ^^ INCLUDE PAGE-SPECIFIC JS ABOVE ^^!!!!!!!-->
+  <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+  <script>
+
+    var pages = {};
+
+    //Objects currently loading (used so that callbacks don't fill in stuff twice)
+    var loading = [];
+
+    CURRENT_USER = {};
+
+
+    $(document).ready(function(){
+      //Function will be executed after loading all templates from other sites.
+      //Takes care of loading the first page based on URL + navbar
+      var start = function(){
+        //Ease of use: Add .last() function to arrays
+        Array.prototype.last = function(){
+          return this[this.length - 1];
+        };
+        Array.prototype.keyContains = function(key, value){
+          for(var i = 0; i < this.length; i++){
+            if(this[i][key] == value){
+              return true;
+            }
+          }
+          return false;
+        };
+        Array.prototype.getByKey = function(key, value){
+          for(var i = 0; i < this.length; i++) {
+            if(this[i][key] == value) {
+              return this[i];
+            }
+          }
+          return false;
+        }
+
+        //Function to seamlessly integrate alerts/notifications across all pages
+        document.notify = function(message, color) {
+          $("#alerts").prepend(loadTemplate("alert", {text: message, color: color}));
+        };
+
+        var makeNotif = function(item) {
+          switch(item.type){
+            case 'f': {
+              return item.fromUser + ' requested to be friends with you!<br/>';
+            }
+            case 'm':
+              return item.fromUser + ' changed mood to ' + item.update + "<br/>";
+            case 'a':
+              return item.fromUser + ', now part of ' + item.update + "<br/>";
+            case 'p':
+              return item.fromUser + ' moved: ' + item.update + '<br/>';
+          }
+        };
+        document.refreshNotifs = function(){
+          $.post('/getNotifs', {}, function(data){
+            if(data.status == 200) {
+              $("#notifications").remove();
+              $("body").append(loadTemplate("notif", {amount: data.notifications.length}));
+              data.notifications.forEach(i => {
+                var notif = makeNotif(i);
+                if(! i.read){
+                  $("#new-notifs").append(notif);
+                }else{
+                  $("#all-notifs").append(notif);
+                }
+              });
+            }
+          });
+        }
+
+        document.refreshNotifs();
+
+        //Define initializer-functions for every page
+        pages['feed'] = feed_init;
+        pages['wall'] = wall_init;
+        pages['create'] = create_init;
+        pages['singlepost'] = singlepost_init;
+        pages['searchuser'] = user_init;
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!! ^^ ADD YOUR INIT FUNCTION UP HERE ^^ !!! sorry for the mess guys
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //TODO add the navbar items based on pages array, not hard coded
+
+        //If index.html just got loaded, get the location and load that page (or default: feed)
+        //TODO: This is a bit stupid as it only takes the last part of the url and ignores potential arguments
+        var page = document.location.pathname.split('/').last();
+        changePage((page in pages) ? page : 'feed', {});
+
+        //When using the navigation bar, change the page accordingly.
+        $(document).on('click', '.nav-item', function(){
+          changePage($(this).attr('id').split('-').last(), {});
+        });
+      };
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!!!!!!! ADD PAGES HERE !!!!!!!!!!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      //Array of all pages from which templates will be loaded. SHOULD ONLY CONTAIN TEMPLATE TAGS
+      var html2load = ['frontend/html/wallfeed.html', 'frontend/html/createpost.html', 'frontend/html/usersearch.html'];
+
+      //Load all templates one by one, let the "engine" initialize them & start displaying the page
+      var portion = 0;
+      var finished = function() {
+        portion++;
+        if(portion == html2load.length + 1) {
+          initTemplates();
+          start();
+        }
+      };
+
+      //Loads currently logged in userdata so we don't have to make 100s of requests
+      $.post('/userdata', {}, function(data){
+        CURRENT_USER = data;
+        $("#nme").text(data.username);
+        finished();
+      });
+
+      //Load templates
+      html2load.forEach(function(item) {
+        $("#templates").append($("<div>").load(item, finished));
+      });
+    });
+
+    //Page-changing function: Loads the templates for a certain page
+    //and operates the navigation bar.
+    function changePage(pagename, options) {
+      loading.forEach(function(i){
+        i.cancel();
+      });
+      permission = {cancelled: false, cancel: function(){this.cancelled = true;}, use: function(){var c = this.cancelled; loading.splice(loading.indexOf(this), 1); return !c;}};
+      loading.push(permission);
+
+      //Load the right template into #page-container
+      $('#page-container').html(loadTemplate('page-' + pagename, {}));
+      //Execute the initialization function for the page
+      pages[pagename](permission, options);
+      //Make all pages in navbar inactive
+      $('.nav-item').removeClass('active');
+      //Highlight the active page
+      $('#nav-'+pagename).addClass('active');
+    }
+
+  </script>
+</head>
+<body>
+  <div style='background-image: url("/img/bg2.png"); z-index: -1; background-repeat: no-repeat; background-position: center; background-size: cover;' class="fixed-bottom w-100 h-100"></div>
+  <div id="templates">
+    <template name="alert">
+      <div class="alert alert-{{color}} alert-dismissible fade show" role="alert">
+        {{text}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </template>
+    <template name="notif">
+      <div id="notifications" style="position: fixed; right: 0; bottom: 0;" class="float-right w-auto card">
+        <div class="card-body float-right">
+          <div id="new-notifs">
+
+          </div>
+          <div class="collapse" id="all-notifs">
+
+          </div>
+          <button id="show-all" class=" mt-2 btn btn-primary" type="button" data-toggle="collapse" data-target="#all-notifs" aria-expanded="false" aria-controls="all-notifs">
+            <span id="show-all-txt">Show all</span> ({{amount}})
+          </button><button class="ml-2 btn btn-link" onclick="document.refreshNotifs();">Refresh</button>
+        </div>
+      </div>
+    </template>
+  </div>
+  <div class="jumbotron jumbotron-fluid mb-0 text-light" style='background-image: url(/img/hbg2.png); background-size: cover; background-repeat: no-repeat; background-position: center;'>
+    <div class="container">
+      <h1 class="display-4">PoliTalk</h1>
+      <p class="lead">A platform to discuss politics and policy-making without the annoyance of partisanship.</p>
+    </div>
+  </div>
+
+  <div id="alerts">
+
+  </div>
+  <div id="user">
+
+  </div>
+  <nav class='navbar navbar-expand-lg navbar-light bg-light'>
+    <a class="navbar-brand" href="#">PoliTalk</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item" id="nav-feed">
+          <a class='nav-link' href='#'>Feed</a>
+        </li>
+        <li class="nav-item" id='nav-wall'>
+          <a class='nav-link' href='#'>Wall</a>
+        </li>
+        <li class="nav-item" id='nav-create'>
+          <a class='nav-link' href='#'>Create Discussion</a>
+        </li>
+        <li class="nav-item" id='nav-searchuser'>
+          <a class='nav-link' href='#'>Search User</a>
+        </li>
+        <li class="nav-item">
+          <a class='nav-link' href='/chat'>Chat</a>
+        </li>
+      </ul>
+    </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li class="nav-item"><a class='nav-link' href='/friendvisualizer'>Visualizer</a></li>
+      <li class="nav-item"><a class='nav-link'>~Welcome, <span id="nme"></span>~</a></li>
+      <li class="nav-item"><a class='nav-link' href='/logout'>Logout</a></li>
+    </ul>
+  </nav>
+  <div id="navbar">
+
+  </div>
+  <div id="page-container" class="container p-3 mx-auto">
+
+  </div>
+</body>
+</html>

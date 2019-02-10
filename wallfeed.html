@@ -1,0 +1,148 @@
+<template name="page-feed">
+  <div id="feed">
+
+  </div>
+</template>
+
+<template name="post">
+  <div class="card m-3">
+    <div class="card-header">
+      <b>{{title}}</b>
+      <br/>
+      <small>by <a onclick="changePage('wall', {userId: '{{if anon none author}}'});"><i>{{if anon anonymous author}}</i></a></small>
+    </div>
+    <div class="card-body">
+      {{content}}
+    </div>
+    <div class="card-footer text-muted">
+      <div id="votes">
+        <span class='votenum'>{{agree}}</span> agree! (<button class="btn btn-link agree" postID='{{postID}}'>agree</button> / <button class="btn btn-link disagree" postID='{{postID}}'>disagree</button>)
+      </div>
+      <textarea rows="2" cols="30" class="form-control nct mb-2"></textarea>
+      <button class="btn btn-md btn-primary new-comment" postID='{{postID}}'>Write comment</button>
+      <button type="button" class="btn btn-link loadcomments" postID='{{postID}}'>Load comments</button>
+      <div></div>
+    </div>
+  </div>
+</template>
+
+
+<template name='comment'>
+  <div class="card m-2">
+    <div class="card-body">
+      {{content}}
+      <footer class="blockquote-footer">by <cite>{{if anon none user}}</cite>
+         (<a href="#" onclick="changePage('singlepost', {postId: '{{post}}'});">go to post</a>)</footer>
+    </div>
+  </div>
+</template>
+
+
+
+<template name="page-wall">
+  <div class="container">
+    <div class="row card mb-2 ml-0 mr-0">
+      <div class="card-body">
+        <div><b>Friends: </b><span id="fl"></span></div>
+        <div id="rc1"><b>Recommended: </b><span id="fr"></span></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-4" id="wall-user">
+        <div class="card">
+        <div class="card-header">User Information</div>
+        <div class="card-body">
+          <div id='uinfo'></div>
+        </div>
+        </div>
+      </div>
+      <div class="col flex-column">
+        <div class="card">
+          <div class="card-header">
+            <button onclick="$('#wall-posts').show();$('#wall-comments').hide();" class="btn btn-outline-secondary">Display Posts</button> | <button onclick="$('#wall-posts').hide();$('#wall-comments').show();"class="btn btn-outline-secondary">Display Comments</button>
+          </div>
+          <div class="card-body">
+            <div style="" class="" id="wall-posts"></div>
+            <div style="display: none;" class="" id="wall-comments"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<template name="friend">
+  <a href="#" onclick="changePage('wall', {userId: '{{username}}'});" class="link mx-2">{{username}}</a>
+</template>
+<template name="rec">
+  <a href="#" onclick="changePage('wall', {userId: '{{username}}'});" class="link mx-2">{{username}}</a>
+</template>
+<template name="userinfo">
+  <b>{{username}}</b><span class="ml-auto" id="btnplc"></span><br/>
+  <small>{{email}}</small>
+  <div class="slider">
+    <input id="p_o" class="form-control" type="range" min="-10" max="10" value="{{political_orientation}}" />
+  </div>
+  Affiliation: <span id="affiliation">{{affiliation}}</span><br/>
+  <i id="mood">{{mood}}</i>
+  <hr/>
+  <b>Interests</b>
+  <div id="myints">
+
+  </div>
+  <hr/>
+  <div id="settings"></div>
+</template>
+<template name="usersettings">
+  <div class="form-group">
+    <label for="changemood">Change mood</label>
+    <input class="form-control" id="changemood" value="{{mood}}"/>
+  </div>
+  <div class="form-group">
+    <label for="changeaffiliation">Change affiliation</label>
+    <input class="form-control" id="changeaffiliation" value="{{affiliation}}"/>
+  </div>
+  <div class="form-group form-group-inline">
+    <label for="changepassword">Change password</label>
+    <div class="input-group">
+    <input class="form-control" id="changepassword" value=""/>
+    <div class="input-group-append">
+      <button class="btn btn-primary" id="changepw" type="button">Change</button>
+    </div>
+    </div>
+  </div>
+</template>
+<template name="addint">
+  <div class="form-group form-group-inline">
+    <label for="addinterest">Add interest</label>
+    <div class="input-group">
+    <input class="form-control" id="addinterest" value=""/>
+    <div class="input-group-append">
+      <button class="btn btn-primary" id="addint" type="button">Add</button>
+    </div>
+    </div>
+  </div>
+</template>
+<template name="nointmsg">
+  <span class="">No interests :(</span>
+</template>
+<template name="int">
+  <span class="">
+    {{interest}}
+  </span>
+</template>
+<template name="rint"><div>
+  <span class="">
+    {{interest}}
+  </span><a int="{{interest}}" class="remthisint"><img src="/img/del.png"/></a>
+</div></template>
+
+<template name="friendbtn">
+  <button id="frndrqst" class="frndrqst btn btn-outline-{{class}} btn-sm">{{text}}</button>
+</template>
+<template name="friendbtn2">
+  <button disabled inactive class="btn btn-outline-secondary btn-sm">Request sent</button>
+</template>
+
+<template name="page-singlepost">
+  <div id="singlepost" class="align-items-center"></div>
+</template>

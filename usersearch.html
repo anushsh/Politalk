@@ -1,0 +1,18 @@
+<template name="page-searchuser">
+  <form id="searchform" class="form-group-inline">
+    <div class="input-group mb-2 mr-sm-2">
+      <input type="text" id="query" class="form-control" autocomplete="off" placeholder="Enter Username">
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button">Search</button>
+      </div>
+    </div>
+  </form>
+  <ul id="search_results" class="list-group"></ul>
+</template>
+
+<template name="userres">
+  <li class="list-group-item d-flex">
+    <a onclick="changePage('wall', {userId: '{{username}}'});">{{username}}</a>
+    <span class="ml-auto buttonplace" usrnme='{{username}}'></span>
+  </li>
+</template>

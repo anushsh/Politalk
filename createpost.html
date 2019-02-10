@@ -1,0 +1,24 @@
+<template name="page-create">
+  <div id="create-post" class="align-items-center">
+    <div class="form-group row">
+      <label class="col-sm-2">Anonymous?</label>
+      <input id="anontoggle" type="checkbox" data-toggle="toggle"/>
+    </div>
+    <div class="form-group">
+      <label for="create-title">Enter Title</label>
+      <input name="title" class="form-control" id="create-title"/>
+    </div>
+    <div class="form-group">
+      <label for="create-content">What would you like to discuss?</label>
+      <small id="create-content-help" class="form-text text-muted">Be concise and clear in your topic formulation & include supporting arguments and counter arguments.</small>
+      <textarea name="content" class="form-control" rows="5" cols="50" id="create-content"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="create-tags">Add a list of topics so people can find your post.</label>
+      <input name="tags" class="form-control" id="create-tags"/>
+    </div>
+    <button class="btn btn-lg btn-primary" id="submit-post" >
+      Open discussion!
+    </button>
+  </div>
+</template>
